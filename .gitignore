@@ -1,0 +1,10 @@
+.superpowers/
+.worktrees/
+node_modules/
+dist/
+cloudflare/bundle/
+.vite-preview.pid
+.env
+.env.local
+.vercel
+.wrangler

@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": false,
+    "rootDir": "..",
+    "outDir": "./dist",
+    "declaration": true,
+    "sourceMap": true
+  },
+  "include": ["src/**/*.ts", "../src/game/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "../src/**/*.test.ts"]
+}

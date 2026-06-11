@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://your-worker-subdomain.workers.dev/$1"
+    },
+    {
+      "source": "/rooms/(.*)/ws",
+      "destination": "https://your-worker-subdomain.workers.dev/rooms/$1/ws"
+    },
+    {
+      "source": "/ws",
+      "destination": "https://your-worker-subdomain.workers.dev/ws"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "xiangqi-online-server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node ./scripts/copy-schema.mjs",
+    "start": "node ./dist/server/src/start.js",
+    "test": "node ./node_modules/vitest/vitest.mjs --config ./vitest.config.ts run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@fastify/websocket": "^11.2.0",
+    "bcryptjs": "^3.0.3",
+    "fastify": "^5.6.1",
+    "nanoid": "^5.1.6",
+    "pg": "^8.16.3",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.3",
+    "@types/pg": "^8.15.6",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.6"
+  }
+}
