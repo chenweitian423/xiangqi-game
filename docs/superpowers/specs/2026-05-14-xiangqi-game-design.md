@@ -1,209 +1,103 @@
-# Xiangqi Game Design
+# 中国象棋游戏设计
 
-## Goal
+## 目标
 
-Build a pure frontend Chinese chess game where the player plays red against a built-in computer opponent. The first version should feel complete as an offline single-player web app while keeping the data model clean enough for future online sharing or cloud save features.
+构建一个基于 React、TypeScript 和 Vite 的中国象棋网页游戏。第一阶段提供完整的本地单机体验，后续扩展为好友私密房间联机对局，并保持规则引擎和数据结构可测试、可序列化、可部署。
 
-## Decisions
+## 核心决策
 
-- Platform: pure frontend single-page app.
-- Stack: React, TypeScript, and Vite.
-- Gameplay: human vs AI, player controls red and moves first.
-- AI level: moderate challenge using shallow search, not a full-strength engine.
-- Layout: centered play table with the board as the main focus.
-- Visual style: modern Chinese-inspired design with warm paper or wood tones, ink green, and red accents.
-- Scope posture: offline first, but state should be serializable for future online features.
+- 平台：浏览器单页应用。
+- 技术栈：React、TypeScript、Vite、Vitest。
+- 单机玩法：玩家执红先行，对战内置 AI。
+- 联机玩法：房主创建房间，好友通过房间号或分享链接加入。
+- 状态同步：优先 WebSocket，失败时回退到 HTTP 提交和轮询。
+- 后端部署：生产联机后端以 Cloudflare Worker + Durable Objects 为准。
+- 部署形态：支持 Cloudflare 全量部署，由 Worker 同时承载静态前端、API、WebSocket 和房间状态。
 
-## Architecture
+## 架构
 
-The app is split into three primary layers.
+系统分为四层：
 
-The game core owns board state, turn state, move history, captured pieces, check status, win/loss status, undo, restart, and legal move generation. It does not depend on React components and can be tested independently.
+1. 游戏规则层  
+   负责棋盘状态、回合、棋谱、吃子、将军、胜负判断、走法生成、悔棋和重开。该层不依赖 React，可以独立测试。
 
-The AI core reads legal moves from the game core, searches cloned positions, and returns the best move. It must never mutate the live game state during search.
+2. AI 层  
+   读取规则层生成的合法走法，通过浅层搜索和局面评估选择黑方走法。AI 搜索必须使用克隆状态，不能修改真实对局状态。
 
-The UI layer renders the centered board, status display, controls, captured pieces, and move list. It dispatches player actions into the game reducer and asks the AI for a move after the player completes a legal move.
+3. UI 层  
+   渲染棋盘、棋子、状态栏、控制区、棋谱、吃子区、联机房间界面和聊天面板。UI 通过 reducer 或 hooks 调用规则层与联机客户端。
 
-## Data Model
+4. 联机后端层  
+   Cloudflare Worker 处理 HTTP API 和 WebSocket 入口；Durable Object 按房间保存房间状态、成员、聊天、棋局和连接信息。
 
-Use a 10 by 9 board model. Each piece has:
+## 数据模型
 
-- A unique id.
-- A side: red or black.
-- A type: king, advisor, elephant, horse, rook, cannon, pawn.
-- A position with row and column.
+棋盘使用 10 行 9 列。每个棋子包含：
 
-Game state contains:
+- 唯一 id
+- 阵营：红或黑
+- 类型：帅/将、仕/士、相/象、马、车、炮、兵/卒
+- 位置：行和列
 
-- Board contents.
-- Current side to move.
-- Move history.
-- Captured pieces.
-- Last move.
-- Selected piece.
-- Legal targets for the selected piece.
-- Check and game-over status.
-- AI difficulty setting.
+游戏状态包含：
 
-The state must be serializable to JSON so a future version can create share links or send the game state to a backend without changing the rules engine.
+- 棋盘内容
+- 当前行棋方
+- 棋谱历史
+- 被吃棋子
+- 最后一步
+- 当前选中棋子
+- 合法目标点
+- 将军与结束状态
+- AI 难度
 
-## Rules
+联机房间状态包含：
 
-Move generation happens in two phases.
+- 房间基础信息和短房间号
+- 成员列表和座位
+- 当前对局
+- 聊天消息
+- 本地会话 token 与成员身份映射
+- 过期时间和最近活跃时间
 
-First, generate pseudo-legal moves for each piece according to Chinese chess movement rules: rook, horse, cannon, elephant, advisor, king, and pawn.
+## 规则
 
-Second, filter pseudo-legal moves into legal moves by rejecting any move that leaves the moving side in check. This legality layer must also handle the facing kings rule.
+走法生成分两步：
 
-The first version should support:
+1. 按棋子移动规则生成伪合法走法，包括车、马、炮、相/象、仕/士、帅/将、兵/卒。
+2. 过滤掉会导致己方被将军的走法，并处理双将照面规则。
 
-- Legal move highlighting.
-- Capture handling.
-- Check detection.
-- Game-over detection when a side has no legal response or the king is captured according to the chosen internal model.
-- Undo by one full human/AI round.
-- Restart from the initial position.
+游戏需要支持：
+
+- 合法走法高亮
+- 吃子
+- 将军检测
+- 胜负检测
+- 悔棋和重开
+- 棋谱展示与回放
+- 联机同步和断线兜底
 
 ## AI
 
-The AI controls black. It uses minimax with alpha-beta pruning at 2 or 3 plies for the default difficulty.
+AI 控制黑方。默认使用带 alpha-beta 剪枝的浅层 minimax 搜索。
 
-The evaluation function includes:
+评估函数考虑：
 
-- Material value by piece type.
-- Capture value.
-- Pawn advancement, especially after crossing the river.
-- King safety.
-- Check opportunities.
+- 子力价值
+- 吃子收益
+- 兵/卒过河后的推进价值
+- 将帅安全
+- 将军机会
 
-The UI should show that the computer is thinking and apply a short delay before the AI move is committed. This keeps the experience readable even when the search returns quickly.
+UI 应展示 AI 思考状态，并保留短暂延迟，让走子过程更容易阅读。
 
-## User Experience
+## 部署
 
-The player selects a red piece by clicking it. The board highlights legal target squares. Clicking a highlighted square applies the move. The latest move marks both source and destination.
+Cloudflare 全量部署是推荐生产形态：
 
-The main screen uses a centered play table:
+- `wrangler.jsonc` 配置 Worker、静态资源、Durable Object 和 CORS。
+- `dist` 由 Vite 构建生成，并通过 Workers Static Assets 托管。
+- `/api/*`、`/rooms/:code/ws`、`/ws` 和 `/health` 优先进入 Worker。
+- 其他路径回落到前端 `index.html`，支持 SPA 路由。
 
-- Top area: red player, current turn, black AI status.
-- Center: board.
-- Bottom or collapsible area: controls, move list, and captured pieces.
-
-Controls include:
-
-- Undo.
-- Restart.
-- Difficulty selection for the built-in AI.
-
-Status feedback includes:
-
-- Player turn.
-- AI thinking.
-- Check.
-- Win or loss.
-
-The first version uses click-to-move rather than drag-and-drop. Dragging and move animation can be added later without changing the core rules.
-
-## Persistence
-
-The game runs offline and stores lightweight local state in the browser. Local storage can save:
-
-- Current game state.
-- AI difficulty setting.
-- Basic UI preferences.
-
-No login, server, leaderboard, or online matchmaking is included in the first version.
-
-## Suggested File Structure
-
-```text
-src/
-  app/
-    App.tsx
-    gameReducer.ts
-  game/
-    types.ts
-    initialState.ts
-    moveGeneration.ts
-    legality.ts
-    applyMove.ts
-    notation.ts
-  ai/
-    evaluate.ts
-    search.ts
-  components/
-    Board.tsx
-    Piece.tsx
-    GameStatus.tsx
-    MoveList.tsx
-    CapturedPieces.tsx
-    GameControls.tsx
-  storage/
-    localSave.ts
-  styles/
-    theme.css
-```
-
-## Testing Strategy
-
-Unit tests should focus on the game core and AI.
-
-Rules tests:
-
-- Each piece generates correct basic moves.
-- Horse leg blocking works.
-- Cannon screen capture works.
-- Elephant cannot cross the river.
-- Advisor and king stay inside the palace.
-- Pawns move correctly before and after crossing the river.
-- Facing kings are illegal.
-- A side cannot make a move that leaves its own king in check.
-
-Game flow tests:
-
-- Captures update board state and captured pieces.
-- Last move is recorded.
-- Undo removes the player's move and the AI response.
-- Restart restores the initial position.
-- Check and game-over states are detected.
-
-AI tests:
-
-- AI only returns legal moves.
-- AI prefers capturing a high-value piece when the choice is obvious.
-- AI responds to check with a legal defensive move.
-- Search does not mutate the original game state.
-
-UI tests can be lighter and cover the main user flow: select piece, see legal targets, move, wait for AI, undo, and restart.
-
-## First Version Scope
-
-Included:
-
-- Human vs AI game.
-- Player red, AI black.
-- Moderate AI using 2 to 3 ply search.
-- Legal move highlights.
-- Last move marker.
-- Move list.
-- Captured pieces.
-- Check and win/loss messages.
-- Undo by one full round.
-- Restart.
-- Local save for settings and the latest game.
-- Offline pure frontend operation.
-
-Excluded:
-
-- Online multiplayer.
-- Accounts.
-- Leaderboards.
-- Cloud save.
-- Share links.
-- Full replay analysis.
-- Full standard Chinese chess notation.
-- Multiple visual themes.
-- Sound effects.
-
-## Open Extension Points
-
-Future online features can be added by serializing game state and move history. Future stronger AI can replace or extend the search and evaluation modules without changing UI components. Future replay or analysis features can build on the existing move history and notation module.
+仓库中的域名、账号和来源地址应保持模板化，不提交真实个人信息。
