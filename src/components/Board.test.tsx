@@ -36,6 +36,25 @@ describe('Board', () => {
     cleanup();
   });
 
+  it('splits board guide lines into two river banks', () => {
+    const { container } = render(<Board state={boardState({})} onSquareClick={vi.fn()} />);
+
+    const board = container.querySelector('.board-wrap');
+
+    expect(board?.querySelector('.board-lines-top')).not.toBeNull();
+    expect(board?.querySelector('.board-lines-bottom')).not.toBeNull();
+  });
+
+  it('draws palace diagonals for both advisor areas', () => {
+    const { container } = render(<Board state={boardState({})} onSquareClick={vi.fn()} />);
+
+    const board = container.querySelector('.board-wrap');
+
+    expect(board?.querySelector('.board-palace-top')).not.toBeNull();
+    expect(board?.querySelector('.board-palace-bottom')).not.toBeNull();
+    expect(board?.querySelectorAll('.board-palace-diagonal')).toHaveLength(4);
+  });
+
   it('distinguishes ordinary move targets from capture targets', () => {
     render(<Board state={boardState({})} onSquareClick={vi.fn()} />);
 

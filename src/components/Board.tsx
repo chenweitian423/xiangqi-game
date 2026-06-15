@@ -121,7 +121,16 @@ export function Board({
 
   return (
     <div className="board-wrap">
-      <div className="board-lines" aria-hidden="true" />
+      <div className="board-lines board-lines-top" aria-hidden="true" />
+      <div className="board-lines board-lines-bottom" aria-hidden="true" />
+      <div className="board-palace board-palace-top" aria-hidden="true">
+        <span className="board-palace-diagonal board-palace-diagonal-forward" />
+        <span className="board-palace-diagonal board-palace-diagonal-backward" />
+      </div>
+      <div className="board-palace board-palace-bottom" aria-hidden="true">
+        <span className="board-palace-diagonal board-palace-diagonal-forward" />
+        <span className="board-palace-diagonal board-palace-diagonal-backward" />
+      </div>
       <div className="board-river" aria-hidden="true">
         <span>楚河</span>
         <span>汉界</span>
