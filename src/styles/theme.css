@@ -384,14 +384,21 @@
 .xiangqi-board,
 .board-river {
   position: absolute;
-  inset: var(--board-padding);
+  left: var(--board-padding);
+  top: var(--board-padding);
+  width: calc(100% - (var(--board-padding) * 2));
+  height: calc(100% - (var(--board-padding) * 2));
 }
 
 .board-lines {
   position: absolute;
-  inset: var(--board-padding);
+  left: var(--board-padding);
+  top: var(--board-padding);
+  width: calc(100% - (var(--board-padding) * 2));
+  height: calc(100% - (var(--board-padding) * 2));
   z-index: 0;
-  overflow: visible;
+  overflow: hidden;
+  display: block;
 }
 
 .board-horizontal-line,
