@@ -371,6 +371,7 @@
 
 .board-wrap {
   --board-padding: clamp(24px, 5.8%, 38px);
+  --piece-hit-size: clamp(36px, 11.8%, 58px);
   position: relative;
   width: min(100%, 620px);
   aspect-ratio: 8 / 9;
@@ -441,7 +442,7 @@
 
 .board-square {
   position: absolute;
-  width: clamp(36px, 11.8%, 58px);
+  width: var(--piece-hit-size);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   display: grid;
@@ -1696,14 +1697,11 @@
 
   .board-wrap {
     --board-padding: clamp(20px, 5.4%, 28px);
+    --piece-hit-size: min(50px, calc(var(--board-padding) * 2.28), 12.4%);
     width: min(calc(100vw - 36px), 420px);
     max-width: 100%;
     margin-inline: auto;
     transform: none;
-  }
-
-  .board-square {
-    width: clamp(40px, 12.6vw, 54px);
   }
 
   .piece {
@@ -1756,12 +1754,9 @@
 
   .board-wrap {
     --board-padding: clamp(18px, 5.1%, 24px);
+    --piece-hit-size: min(48px, calc(var(--board-padding) * 2.24), 12.5%);
     width: min(calc(100vw - 20px), 400px);
     border-width: 3px;
-  }
-
-  .board-square {
-    width: clamp(42px, 13.4vw, 52px);
   }
 
   .piece {
