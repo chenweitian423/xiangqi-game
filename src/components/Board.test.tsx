@@ -36,13 +36,14 @@ describe('Board', () => {
     cleanup();
   });
 
-  it('splits board guide lines into two river banks', () => {
+  it('draws standard Xiangqi board guide lines with a river gap', () => {
     const { container } = render(<Board state={boardState({})} onSquareClick={vi.fn()} />);
 
     const board = container.querySelector('.board-wrap');
 
-    expect(board?.querySelector('.board-lines-top')).not.toBeNull();
-    expect(board?.querySelector('.board-lines-bottom')).not.toBeNull();
+    expect(board?.querySelectorAll('.board-horizontal-line')).toHaveLength(10);
+    expect(board?.querySelectorAll('.board-vertical-line')).toHaveLength(16);
+    expect(board?.querySelectorAll('.board-inner-vertical')).toHaveLength(14);
   });
 
   it('draws palace diagonals for both advisor areas', () => {
@@ -50,9 +51,7 @@ describe('Board', () => {
 
     const board = container.querySelector('.board-wrap');
 
-    expect(board?.querySelector('.board-palace-top')).not.toBeNull();
-    expect(board?.querySelector('.board-palace-bottom')).not.toBeNull();
-    expect(board?.querySelectorAll('.board-palace-diagonal')).toHaveLength(4);
+    expect(board?.querySelectorAll('.board-palace-line')).toHaveLength(4);
   });
 
   it('distinguishes ordinary move targets from capture targets', () => {

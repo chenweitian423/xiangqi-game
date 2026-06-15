@@ -13,6 +13,15 @@ export type BoardProps = {
   orientation?: Side;
 };
 
+const boardLineCoordinates = {
+  left: 0,
+  right: 800,
+  top: 0,
+  bottom: 900,
+  riverTop: 400,
+  riverBottom: 500,
+};
+
 function isPositionIn(list: Position[], position: Position): boolean {
   return list.some((entry) => samePosition(entry, position));
 }
@@ -51,6 +60,8 @@ export function Board({
     ? state.board.flat().find((piece) => piece?.id === state.selectedPieceId) ?? null
     : null;
   const capturedPiece = state.lastMove?.captured ?? null;
+  const horizontalLines = Array.from({ length: BOARD_ROWS }, (_, row) => row * 100);
+  const innerVerticalLines = Array.from({ length: BOARD_COLS - 2 }, (_, index) => (index + 1) * 100);
 
   for (let row = 0; row < BOARD_ROWS; row += 1) {
     for (let col = 0; col < BOARD_COLS; col += 1) {
@@ -121,16 +132,59 @@ export function Board({
 
   return (
     <div className="board-wrap">
-      <div className="board-lines board-lines-top" aria-hidden="true" />
-      <div className="board-lines board-lines-bottom" aria-hidden="true" />
-      <div className="board-palace board-palace-top" aria-hidden="true">
-        <span className="board-palace-diagonal board-palace-diagonal-forward" />
-        <span className="board-palace-diagonal board-palace-diagonal-backward" />
-      </div>
-      <div className="board-palace board-palace-bottom" aria-hidden="true">
-        <span className="board-palace-diagonal board-palace-diagonal-forward" />
-        <span className="board-palace-diagonal board-palace-diagonal-backward" />
-      </div>
+      <svg
+        className="board-lines"
+        viewBox="0 0 800 900"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        {horizontalLines.map((y) => (
+          <line
+            key={`h-${y}`}
+            className="board-horizontal-line"
+            x1={boardLineCoordinates.left}
+            y1={y}
+            x2={boardLineCoordinates.right}
+            y2={y}
+          />
+        ))}
+        <line
+          className="board-vertical-line board-side-vertical"
+          x1={boardLineCoordinates.left}
+          y1={boardLineCoordinates.top}
+          x2={boardLineCoordinates.left}
+          y2={boardLineCoordinates.bottom}
+        />
+        <line
+          className="board-vertical-line board-side-vertical"
+          x1={boardLineCoordinates.right}
+          y1={boardLineCoordinates.top}
+          x2={boardLineCoordinates.right}
+          y2={boardLineCoordinates.bottom}
+        />
+        {innerVerticalLines.map((x) => (
+          <g key={`v-${x}`}>
+            <line
+              className="board-vertical-line board-inner-vertical"
+              x1={x}
+              y1={boardLineCoordinates.top}
+              x2={x}
+              y2={boardLineCoordinates.riverTop}
+            />
+            <line
+              className="board-vertical-line board-inner-vertical"
+              x1={x}
+              y1={boardLineCoordinates.riverBottom}
+              x2={x}
+              y2={boardLineCoordinates.bottom}
+            />
+          </g>
+        ))}
+        <line className="board-palace-line" x1="300" y1="0" x2="500" y2="200" />
+        <line className="board-palace-line" x1="500" y1="0" x2="300" y2="200" />
+        <line className="board-palace-line" x1="300" y1="700" x2="500" y2="900" />
+        <line className="board-palace-line" x1="500" y1="700" x2="300" y2="900" />
+      </svg>
       <div className="board-river" aria-hidden="true">
         <span>楚河</span>
         <span>汉界</span>
