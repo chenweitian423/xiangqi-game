@@ -44,6 +44,7 @@ describe('Board', () => {
     expect(board?.querySelectorAll('.board-horizontal-line')).toHaveLength(10);
     expect(board?.querySelectorAll('.board-vertical-line')).toHaveLength(16);
     expect(board?.querySelectorAll('.board-inner-vertical')).toHaveLength(14);
+    expect(board?.querySelectorAll('.board-position-marker')).toHaveLength(14);
   });
 
   it('draws palace diagonals for both advisor areas', () => {

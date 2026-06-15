@@ -22,6 +22,23 @@ const boardLineCoordinates = {
   riverBottom: 500,
 };
 
+const markerPositions = [
+  { row: 2, col: 1 },
+  { row: 2, col: 7 },
+  { row: 3, col: 0 },
+  { row: 3, col: 2 },
+  { row: 3, col: 4 },
+  { row: 3, col: 6 },
+  { row: 3, col: 8 },
+  { row: 6, col: 0 },
+  { row: 6, col: 2 },
+  { row: 6, col: 4 },
+  { row: 6, col: 6 },
+  { row: 6, col: 8 },
+  { row: 7, col: 1 },
+  { row: 7, col: 7 },
+];
+
 function isPositionIn(list: Position[], position: Position): boolean {
   return list.some((entry) => samePosition(entry, position));
 }
@@ -46,6 +63,37 @@ function pointStyle(position: Position, orientation: Side): CSSProperties {
     left: `${(displayCol / (BOARD_COLS - 1)) * 100}%`,
     top: `${(displayRow / (BOARD_ROWS - 1)) * 100}%`,
   };
+}
+
+function renderPositionMarker({ row, col }: Position) {
+  const x = col * 100;
+  const y = row * 100;
+  const gap = 9;
+  const length = 19;
+  const quadrants = [
+    col > 0 ? { key: 'tl', sx: -1, sy: -1 } : null,
+    col < BOARD_COLS - 1 ? { key: 'tr', sx: 1, sy: -1 } : null,
+    col > 0 ? { key: 'bl', sx: -1, sy: 1 } : null,
+    col < BOARD_COLS - 1 ? { key: 'br', sx: 1, sy: 1 } : null,
+  ].filter(Boolean) as { key: string; sx: 1 | -1; sy: 1 | -1 }[];
+
+  return (
+    <g key={`marker-${row}-${col}`} className="board-position-marker">
+      {quadrants.map(({ key, sx, sy }) => {
+        const innerX = x + sx * gap;
+        const outerX = x + sx * (gap + length);
+        const innerY = y + sy * gap;
+        const outerY = y + sy * (gap + length);
+
+        return (
+          <path
+            key={key}
+            d={`M ${outerX} ${innerY} L ${innerX} ${innerY} M ${innerX} ${outerY} L ${innerX} ${innerY}`}
+          />
+        );
+      })}
+    </g>
+  );
 }
 
 export function Board({
@@ -184,10 +232,13 @@ export function Board({
         <line className="board-palace-line" x1="500" y1="0" x2="300" y2="200" />
         <line className="board-palace-line" x1="300" y1="700" x2="500" y2="900" />
         <line className="board-palace-line" x1="500" y1="700" x2="300" y2="900" />
+        {markerPositions.map(renderPositionMarker)}
       </svg>
       <div className="board-river" aria-hidden="true">
-        <span>楚河</span>
-        <span>汉界</span>
+        <span>楚</span>
+        <span>河</span>
+        <span>汉</span>
+        <span>界</span>
       </div>
       <div className="xiangqi-board" aria-label="象棋棋盘">
         {squares}
